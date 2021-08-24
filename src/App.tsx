@@ -9,6 +9,8 @@ function App() {
   interface Node {
     activityPositions: any;
     activityName: string;
+    activityDistance: any;
+    activityType: string;
   }
 
   const [activities, setActivities] = useState<Node[]>([]);
@@ -35,14 +37,14 @@ function App() {
     for (let i = 0; i < stravaActivityResponse.data.length; i ++) {
       if (stravaActivityResponse.data[i].map.summary_polyline !== null) {
         const activity_polyline = polyline.decode(stravaActivityResponse.data[i].map.summary_polyline);
-        console.log(activity_polyline)
-      const activity_name = stravaActivityResponse.data[i].name;
-      console.log(activity_name)
-      polylines.push({activityPositions: activity_polyline, activityName: activity_name});
+        const activity_name = stravaActivityResponse.data[i].name;
+        const activity_distance = (stravaActivityResponse.data[i].distance / 1000).toFixed(2);
+        const activity_type = stravaActivityResponse.data[i].type;
+        polylines.push({activityPositions: activity_polyline, activityName: activity_name, activityDistance: activity_distance, activityType: activity_type});
     } 
     }
     
-    console.log(polylines)
+    //console.log(polylines)
     setActivities(polylines);
     
 
@@ -65,6 +67,10 @@ function App() {
           <Popup>
             <div>
               <h2>{"Name: " + activity.activityName}</h2>
+              <h2>{"Distance: " + activity.activityDistance + " km"}</h2>
+              <h2>{"Type: " + activity.activityType}</h2>
+
+
             </div>
           </Popup>
         </Polyline>
