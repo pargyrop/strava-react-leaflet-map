@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import { MapContainer, TileLayer, Popup, Polyline } from 'react-leaflet'
 import './App.css';
 import axios from 'axios';
@@ -11,30 +11,42 @@ function App() {
     activityName: string;
   }
 
-  const [nodes, setNodes] = useState<Node[]>([]);
+  const [activities, setActivities] = useState<Node[]>([]);
 
-  const clientID = "43995";
-  const clientSecret = "6b583c87a9969f7cc66c7b6b0cff643b820bb135";
-  const refreshToken = "98b596ec1ce3a93f6cda9515ee3cb430d259e946"
-  const auth_link = "https://www.strava.com/oauth/token"
-  const activities_link = `https://www.strava.com/api/v3/athlete/activities`
+  const clientID = "31973";
+  const clientSecret = "9763e3d072bcddee2e2da4cd062b945114af6633";
+  const refreshToken = "f727208ddb97f5667c94632d450fbbdfcae3365a";
+  const auth_link = "https://www.strava.com/oauth/token";
+  const activities_link = `https://www.strava.com/api/v3/athlete/activities`;
 
   useEffect(() => {
     async function fetchData() {
       const stravaAuthResponse = await axios.all([
         axios.post(`${auth_link}?client_id=${clientID}&client_secret=${clientSecret}&refresh_token=${refreshToken}&grant_type=refresh_token`)
       ]);
+
       
       const stravaActivityResponse = await axios.get(`${activities_link}?access_token=${stravaAuthResponse[0].data.access_token}`);
-      console.log(stravaActivityResponse.data[0]);
-      const polylines = [];
-      for (let i = 0; i < stravaActivityResponse.data.length; i += 1) {
-        const activity_polyline = stravaActivityResponse.data[i].map.summary_polyline;
-        const activity_name = stravaActivityResponse.data[i].name;
-        polylines.push({activityPositions: polyline.decode(activity_polyline), activityName: activity_name});
-      }
-      console.log(polylines)
-      setNodes(polylines);
+    console.log(stravaActivityResponse.data);
+      
+    const polylines = [];
+
+
+    for (let i = 0; i < stravaActivityResponse.data.length; i ++) {
+      if (stravaActivityResponse.data[i].map.summary_polyline !== null) {
+        const activity_polyline = polyline.decode(stravaActivityResponse.data[i].map.summary_polyline);
+        console.log(activity_polyline)
+      const activity_name = stravaActivityResponse.data[i].name;
+      console.log(activity_name)
+      polylines.push({activityPositions: activity_polyline, activityName: activity_name});
+    } 
+    }
+    
+    console.log(polylines)
+    setActivities(polylines);
+    
+
+
     }
 
     fetchData();
@@ -42,13 +54,13 @@ function App() {
 
   return (
    
-    <MapContainer center={[42.585444, 13.257684]} zoom={6} scrollWheelZoom={true}>
+    <MapContainer center={[-37.8322305,144.9910983]} zoom={10} scrollWheelZoom={true}>
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {nodes.map((activity, i) => (
+      {activities.map((activity, i) => (
         <Polyline key = {i} positions={activity.activityPositions}>
           <Popup>
             <div>
